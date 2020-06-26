@@ -4,7 +4,8 @@ import random
 import nltk
 
 from classificadores import classifiers_list
-from util import Sentencas, VoteClassifier
+from util import Sentencas
+from VoteClassifier import VoteClassifier
 
 
 def make_folder(path):
@@ -45,14 +46,14 @@ def main():
     neutras = Sentencas("./labels/neutras")
 
     # cria lista com todas as 3000 palavras mais frequentes em todas as sentenças
-    all_words = nltk.FreqDist(absolutorias.words() + condenatorias.words() + neutras.words())
+    all_words = nltk.FreqDist(absolutorias.tokens() + condenatorias.tokens() + neutras.tokens())
     word_features = list(all_words)[:3000]
 
     # cria lista de (features , classificacao)
     a_set = [(document_features(s, word_features), 1) for s in absolutorias.sentencas]
     c_set = [(document_features(s, word_features), 2) for s in condenatorias.sentencas]
     n_set = [(document_features(s, word_features), 0) for s in neutras.sentencas]
-    feature_set =  a_set + c_set + n_set
+    feature_set = a_set + c_set + n_set
 
     # embaralha e divide o set
     random.shuffle(feature_set)

@@ -8,6 +8,7 @@ import pandas as pd
 
 from rol_varas import LISTA_VARAS
 
+
 def load_category(cat):
     if cat == "0":
         return "neutras"

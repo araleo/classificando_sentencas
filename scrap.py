@@ -14,21 +14,11 @@ EXCEPTS = (
 
 ERROS = []
 
-"""
-try:
-    codigos = [
-        (re8.search(str(x)).group(), re32.search(str(x)).group())
-        for x in links
-    ]
-except AttributeError as err:
-    ERROS.append(str(err))
-"""
-
 
 def get_request(url):
     try:
         res = requests.get(url)
-        res.raise_for_status
+        res.raise_for_status()
     except EXCEPTS as err:
         ERROS.append(str(err))
         return False
@@ -38,7 +28,6 @@ def get_request(url):
 
 def cnj_strip(cnj):
     return "".join([x for x in list(cnj) if x not in string.punctuation])
-
 
 
 def main():
@@ -76,7 +65,6 @@ def main():
                         sentenca = soup.get_text()
                         with open(f"./scrap/{vara}/{cnj}{cod8}{cod32}.txt", "w") as f:
                             f.write(sentenca)
-
 
     with open(f"./scrap/errorlog.txt", "a") as f:
         for err in ERROS:
