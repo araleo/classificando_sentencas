@@ -2,10 +2,11 @@ import os
 import sys
 
 from unidecode import unidecode
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import TfidfTransformer
+import pandas as pd
 
 from rol_varas import LISTA_VARAS
-from util import Sentencas
-
 
 def load_category(cat):
     if cat == "0":
@@ -14,32 +15,36 @@ def load_category(cat):
         return "absolutorias"
     elif cat == "2":
         return "condenatorias"
+    else:
+        return None
 
 
-def load_files(root, varas):
-    D = dict()
-    for vara in varas:
-        D[vara] = {}
+def load_files(root):
+    d = dict()
+    for vara in os.listdir(root):
+        d[vara] = {}
         for categoria in os.listdir(f"{root}/{vara}"):
             if not categoria == "3":
                 cat = load_category(categoria)
-                D[vara][cat] = Sentencas(f"{root}/{vara}/{categoria}")
-    return D
+                for sent in os.listdir(f"{root}/{vara}/{categoria}"):
+                    with open(f"{root}/{vara}/{categoria}/{sent}", "r") as f:
+                        conteudo = f.read()
+                        d[vara].setdefault(cat, {})
+                        d[vara][cat][sent[:20]] = conteudo
+    return d
 
 
-def total_varas(D, varas, tipo):
-    return sum([len(D[vara][tipo].sentencas) for vara in varas if tipo in D[vara]])
+def total_varas(d, varas, tipo):
+    return sum([len(d[vara][tipo]) for vara in varas if tipo in d[vara]])
 
 
-def total_sentencas(D):
+def total_sentencas(d):
     tipos = ["absolutorias", "condenatorias", "neutras"]
-    return sum([total_varas(D, list(D), tipo) for tipo in tipos])
+    return sum([total_varas(d, list(d), tipo) for tipo in tipos])
 
 
 def validate_vara(varas):
-    if varas[0] == "todas":
-        return LISTA_VARAS
-    return [vara for vara in varas if vara in LISTA_VARAS]
+    return LISTA_VARAS if varas[0] == "todas" else [vara for vara in varas if vara in LISTA_VARAS]
 
 
 def calc_pcts(qtds, query):
@@ -50,49 +55,82 @@ def calc_pcts(qtds, query):
     return pct
 
 
-def corpus_search(D, query, juizos):
-    qtds = dict()
-    tipos = ["absolutorias", "condenatorias"]
+def query_finder(query, sent):
+    return len([x for x in set(query.split()) if f" {x} " in sent]) == len(query.split())
+
+
+def corpus_search(d, query, juizos, tipos):
+    qtds = {"pesquisadas": 0, "absolutorias": 0, "condenatorias": 0}
+    matches = {"absolutorias": {}, "condenatorias": {}}
     for juizo in juizos:
         for tipo in tipos:
-            qtds[tipo] = 0
-            for sentenca in D[juizo][tipo].sentencas:
-                if sentenca.find_query(query):
+            for numero, sentenca in d[juizo][tipo].items():
+                qtds["pesquisadas"] += 1
+                if query_finder(query, sentenca):
+                    matches[tipo][numero] = sentenca
                     qtds[tipo] += 1
-    qtds["pesquisadas"] = sum([total_varas(D, juizos, tipo) for tipo in tipos])
     qtds[query] = qtds.get("absolutorias", 0) + qtds.get("condenatorias", 0)
-    return qtds
+    return matches, qtds
+
+
+def sent_finder(sentencas, query):
+    idfs, tfidfs = compute_tf_idfs(sentencas)
+    scores = {}
+    for num, sent in sentencas.items():
+        score = 0
+        for word in set(query.split()):
+            score += tfidfs.loc[num, word]
+        scores[num] = score
+    top = sorted(scores, key=scores.get, reverse=True)[0]
+    return top, sentencas[top]
+
+
+def compute_tf_idfs(docs):
+    nums = list(docs)
+    sents = list(docs.values())
+    cv = CountVectorizer()
+    word_count = cv.fit_transform(sents)
+    transformer = TfidfTransformer(smooth_idf=True, use_idf=True)
+    transformer.fit(word_count)
+    idfs_df = pd.DataFrame(transformer.idf_, index=cv.get_feature_names(), columns=["idf_weights"])
+
+    tf_idf_vector = transformer.transform(word_count)
+    tf_idfs_df = pd.DataFrame(tf_idf_vector.todense(), index=nums, columns=cv.get_feature_names())
+
+    return idfs_df, tf_idfs_df
 
 
 def main():
-
-    query = input("Busca: ")
-    juizos = validate_vara(input("Vara: ").split())
-
-    if len(juizos) == 0:
-        print("Nenhuma das varas pesquisadas foi encontrada em nosso banco.")
-        sys.exit()
-
-
     print("Carregando dados...")
-    D = load_files(f"./{sys.argv[1]}", juizos)
-    numero_sentencas = total_sentencas(D)
+    d = load_files(f"./{sys.argv[1]}")
+    numero_sentencas = total_sentencas(d)
     print(f"Dados carregados! Foram carregadas {numero_sentencas} sentenças.")
 
+    while True:
+        query = input("Busca: ")
+        query = unidecode(query).lower()
+        juizos = validate_vara(input("Vara: ").split())
+        tipos = ["absolutorias", "condenatorias"]
 
-    qtds = corpus_search(D, query, juizos)
-    pct = calc_pcts(qtds, query)
+        if len(juizos) == 0:
+            print("Nenhuma das varas pesquisadas foi encontrada em nosso banco.")
+            sys.exit()
 
-    output = (
-        f"Foram pesquisadas {qtds['pesquisadas']} sentenças ",
-        f"e o termo {query} foi encontrado em {qtds[query]} delas ",
-        f"({pct['query']:.2f}%).\n",
-        f"Das {qtds[query]} sentenças encontradas, ",
-        f"{qtds.get('absolutorias', 0)} eram absolutorias ({pct['abs']:.2f}%) e ",
-        f"{qtds.get('condenatorias', 0)} eram condenatorias ({pct['con']:.2f}%)."
-    )
+        sents, qtds = corpus_search(d, query, juizos, tipos)
+        pct = calc_pcts(qtds, query)
 
-    print("".join(output))
+        output = (
+            f"Foram pesquisadas {qtds['pesquisadas']} sentenças ",
+            f"e o termo {query} foi encontrado em {qtds[query]} delas ",
+            f"({pct['query']:.2f}%).\n",
+            f"Das {qtds[query]} sentenças encontradas, ",
+            f"{qtds.get('absolutorias', 0)} eram absolutorias ({pct['abs']:.2f}%) e ",
+            f"{qtds.get('condenatorias', 0)} eram condenatorias ({pct['con']:.2f}%)."
+        )
+        print("".join(output))
+
+        cat = load_category(input("Deseja visualizar uma sentença? 1. Absolutoria 2. Condenatoria "))
+        print(sent_finder(sents[cat], query))
 
 
 if __name__ == "__main__":

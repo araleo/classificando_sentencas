@@ -1,9 +1,6 @@
-arquivo
-corpus
+corpora
 labels
-moot
 raw
-scrap
-teste
 __pycache__
 .ipynb_checkpoints
+.idea

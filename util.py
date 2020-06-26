@@ -6,7 +6,7 @@ from unidecode import unidecode
 import nltk
 
 
-STOPLIST = nltk.corpus.stopwords.words("portuguese") + [p for p in string.punctuation] + ["–"]
+STOPLIST = nltk.corpus.stopwords.words("portuguese") + list(string.punctuation) + ["–"]
 
 
 class VoteClassifier(ClassifierI):
@@ -63,40 +63,3 @@ class Sentenca():
     def find_query(self, query):
         return unidecode(query.lower()) in self.decoded_tokens()
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-class Properties(Sentenca):
-    def bigrams(self):
-        return list(nltk.bigrams(self.tokens()))
-
-    def ngrams(self, k):
-        return list(nltk.ngrams(self.tokens(s), k))
-
-    def words_fdist(self):
-        return nltk.FreqDist(self.words())
-
-    def bigrams_fdist(self):
-        return nltk.FreqDist(self.bigrams())
-
-    def ngrams_fdist(self, k):
-        return nltk.FreqDist(self.ngrams(k))
-
-    def words_vocabulary(self, n):
-        return set([x for x, _ in self.words_fdist().most_common(n)])
-
-    def bigrams_vocabulary(self, n):
-        return set([x for x, _ in self.bigrams_fdist().most_common(n)])
-
-    def ngrams_vocabulary(self, k, n):
-        return set([x for x, _ in self.ngrams_fdist(k).most_common(n)])

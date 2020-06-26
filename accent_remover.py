@@ -2,36 +2,31 @@ import os
 
 from unidecode import unidecode
 
-def text_remover(text):
-    return (unidecode(text))
+
+def make_folder(folder):
+    try:
+        os.makedirs(folder)
+    except:
+        pass
 
 
-def dir_remover():
-    for file in os.listdir("./teste"):
-        with open(f"./teste/{file}", "r") as f:
+def dir_remover(infolder, outfolder):
+    for file in os.listdir(infolder):
+        with open(f"{infolder}/{file}", "r") as f:
             conteudo = f.read()
             clean = unidecode(conteudo)
-            with open(f"./teste/clean{file}", "w") as g:
-                g.write(clean)
+            out = "".join([x.lower() for x in clean])
+            make_folder(outfolder)
+            with open(f"{outfolder}/{file[:20]}.txt", "w") as g:
+                g.write(out)
 
 
 def main():
-
-    with open("./teste/teste2.txt", "r") as f:
-        conteudo = f.read()
-        clean = unidecode(conteudo).split()
-        clean_set = set(unidecode(conteudo).split())
-
-        print(conteudo)
-        print(clean)
-        print(clean_set)
-
-        while True:
-            query = unidecode(input())
-            print(query in conteudo)
-            print(query in clean)
-            print(query in clean_set)
-
+    c_path = "./corpora/corpus"
+    for vara in os.listdir(c_path):
+        print(vara)
+        for cat in os.listdir(f"{c_path}/{vara}"):
+            dir_remover(f"{c_path}/{vara}/{cat}", f"./corpora/decoded/{vara}/{cat}")
 
 
 if __name__ == "__main__":

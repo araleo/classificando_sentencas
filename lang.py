@@ -66,13 +66,8 @@ def tokenize(document):
     Process document by coverting all words to lowercase, and removing any
     punctuation or English stopwords.
     """
-    words = list()
-    tokens = nltk.word_tokenize(document)
-    for token in tokens:
-        if (token not in string.punctuation
-                and token not in nltk.corpus.stopwords.words("portuguese")):
-            words.append(token.lower())
-    return words
+    stop = string.punctuation + nltk.corpus.stopwords.words("portuguese")
+    return [t.lower() for t in nltk.word_tokenize(document) if t.lower() not in stop]
 
 
 def compute_idfs(documents):
@@ -83,25 +78,32 @@ def compute_idfs(documents):
     Any word that appears in at least one of the documents should be in the
     resulting dictionary.
     """
-    idfs = dict()
-    words_lists = documents.values()
+    idfs = {}
+    docs = documents.values()
 
-    # for each list of words in the dictionary
-    for words in words_lists:
+    # caches words
+    all_words = []
+    for name, doc in documents.items():
+        doc_words = {}
+        for word in doc:
+            doc_words[word] = True
+        all_words.append(doc_words)
 
-        # for each word in that list
-        for word in words:
+    # for each word in that list
+    for doc in all_words:
+
+        for word in doc:
 
             # if that word is not already in the output
             if word not in idfs:
 
-                # count in how many other documents it appears
-                doc_count = 0
-                for x in words_lists:
-                    if word in x:
-                        doc_count += 1
+                # count in how many documents it appears
+                count = 0
+                for d in docs:
+                    if word in d:
+                        count += 1
 
-                idfs[word] = math.log(len(words_lists) / doc_count)
+                idfs[word] = math.log(len(docs) / count)
 
     return idfs
 
