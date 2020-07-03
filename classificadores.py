@@ -7,4 +7,5 @@ MNB = SklearnClassifier(MultinomialNB())
 BNB = SklearnClassifier(BernoulliNB())
 SGD = SklearnClassifier(SGDClassifier())
 LSVC = SklearnClassifier(LinearSVC(dual=False))
-classifiers_list = [MNB, BNB, SGD, LSVC]
+classifiers_list = [LSVC, SGD]
+# classifiers_list = [MNB, BNB, SGD, LSVC]

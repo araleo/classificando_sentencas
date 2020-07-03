@@ -26,12 +26,16 @@ class Sentencas:
         return " ".join(words)
 
     def tokens(self):
-        return [t for s in self.sentencas for ts in s.tokens() for t in ts]
+        tokens = []
+        for s in self.sentencas:
+            t = s.tokens()
+            tokens.extend(t)
+        return tokens
 
 
 class Sentenca:
     def __init__(self, texto):
-        self._texto = texto
+        self.texto = texto
 
     def tokens(self):
-        return [t.lower() for t in nltk.word_tokenize(self._texto) if t.lower() not in STOPLIST]
+        return [t.lower() for t in nltk.word_tokenize(self.texto) if t.lower() not in STOPLIST]

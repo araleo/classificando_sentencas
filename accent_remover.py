@@ -16,17 +16,18 @@ def dir_remover(infolder, outfolder):
             conteudo = f.read()
             clean = unidecode(conteudo)
             out = "".join([x.lower() for x in clean])
+            out = " ".join(out.split())
             make_folder(outfolder)
             with open(f"{outfolder}/{file[:20]}.txt", "w") as g:
                 g.write(out)
 
 
 def main():
-    c_path = "./corpora/corpus"
+    c_path = "./LSVC/corpora/corpus"
     for vara in os.listdir(c_path):
         print(vara)
         for cat in os.listdir(f"{c_path}/{vara}"):
-            dir_remover(f"{c_path}/{vara}/{cat}", f"./corpora/decoded/{vara}/{cat}")
+            dir_remover(f"{c_path}/{vara}/{cat}", f"./LSVC/corpora/decoded2/{vara}/{cat}")
 
 
 if __name__ == "__main__":
