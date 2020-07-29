@@ -2,7 +2,7 @@ import os
 
 import psycopg2
 
-from google import load_category
+from util import load_category
 
 
 def load_texto(filepath):
@@ -12,25 +12,33 @@ def load_texto(filepath):
 
 
 def main():
-    conn = psycopg2.connect("host=192.168.0.100 user=pi dbname=jurimetria")
+    conn = psycopg2.connect("dbname=dfc67a8iipaeqb user=jisxbmuyjgymou password=54d9e761006413376160f41e9b858661b6f11f95ccf2897723f41d1e1ba7be77 host=ec2-34-239-241-25.compute-1.amazonaws.com port=5432")
     cur = conn.cursor()
 
-    root = "./LSVC/corpora"
+    lista_varas = ["11", "12"]
+
+    root = "./corpora"
     corpus = f"{root}/corpus"
     d_corpus = f"{root}/decoded"
 
-    # for vara in os.listdir(corpus):
-    vara = "6"
-    for cat in os.listdir(f"{corpus}/{vara}"):
-        for sent in os.listdir(f"{corpus}/{vara}/{cat}"):
-            numero = sent[:20]
-            texto = load_texto(f"{corpus}/{vara}/{cat}/{sent}")
-            decoded = load_texto(f"{d_corpus}/{vara}/{cat}/{sent[:20]}.txt")
+    for vara in lista_varas:
+        print(vara)
+        for cat in os.listdir(f"{corpus}/{vara}"):
             tipo = load_category(cat)
-            cur.execute(
-                "INSERT INTO sentencas (vara, numero, texto, decoded, tipo) VALUES (%s, %s, %s, %s, %s)",
-                (vara, numero, texto, decoded, tipo)
-            )
+            if tipo:
+                for sent in os.listdir(f"{corpus}/{vara}/{cat}"):
+                    numero = sent[:20]
+                    texto = load_texto(f"{corpus}/{vara}/{cat}/{sent}")
+                    decoded = load_texto(f"{d_corpus}/{vara}/{cat}/{sent[:20]}.txt")
+                    tribunal = "TJMG"
+
+                    try:
+                        cur.execute(
+                            "INSERT INTO jurimetria_sentenca (tribunal, vara, numero, texto, decoded, tipo) VALUES (%s, %s, %s, %s, %s, %s)",
+                            (tribunal, vara, numero, texto, decoded, tipo)
+                        )
+                    except psycopg2.Error as e:
+                        print(numero, e)
 
     conn.commit()
     conn.close()

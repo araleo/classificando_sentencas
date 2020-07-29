@@ -4,5 +4,10 @@ raw
 __pycache__
 .ipynb_checkpoints
 .idea
-LSVC
-TCTS
+notebooks/
+tributario/
+temp
+t1/
+t3/
+db_loader
+db_loader.py

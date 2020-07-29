@@ -1,3 +1,6 @@
+""" Módulo para realizar pesquisas textuais entre as sentenças já classificadas. """
+
+
 import os
 import sys
 
@@ -7,20 +10,15 @@ from sklearn.feature_extraction.text import TfidfTransformer
 import pandas as pd
 
 from rol_varas import LISTA_VARAS
-
-
-def load_category(cat):
-    if cat == "0":
-        return "neutras"
-    elif cat == "1":
-        return "absolutorias"
-    elif cat == "2":
-        return "condenatorias"
-    else:
-        return None
+from util import load_category
 
 
 def load_files(root):
+    """
+    Recebe um diretório para leitura.
+    Retorna um dicionário do tipo d[vara][categoria][num_processo] = sentença
+    para todas as sentenças em subdiretórios do diretório root.
+    """
     d = dict()
     for vara in os.listdir(root):
         d[vara] = {}
@@ -36,19 +34,35 @@ def load_files(root):
 
 
 def total_varas(d, varas, tipo):
+    """
+    Recebe um dicionário, uma lista de strings com varas e uma string com um tipo.
+    Retorna o total de sentenças do tipo entre as varas encontradas no dicionário.
+    """
     return sum([len(d[vara][tipo]) for vara in varas if tipo in d[vara]])
 
 
 def total_sentencas(d):
+    """Recebe um dicionário e retorna o total de sentenças encontradas nele."""
     tipos = ["absolutorias", "condenatorias", "neutras"]
     return sum([total_varas(d, list(d), tipo) for tipo in tipos])
 
 
 def validate_vara(varas):
+    """
+    Recebe uma lista de strings contendo varas.
+    Retorna a LISTA_VARAS se a primeira string da lista == "todas".
+    Senão, retorna uma lista com as varas que estão na lista
+    passada como parâmetro e também estão na LISTA_VARAS.
+    """
     return LISTA_VARAS if varas[0] == "todas" else [vara for vara in varas if vara in LISTA_VARAS]
 
 
 def calc_pcts(qtds, query):
+    """
+    Recebe um dicionário com quantidades.
+    Retorna um dicionário contendo porcentagens
+    para cada tipo de sentença e para a query.
+    """
     pct = dict()
     pct["query"] = 100 * qtds[query] / qtds["pesquisadas"]
     pct["abs"] = 100 * qtds.get("absolutorias", 0) / qtds[query] if pct["query"] != 0 else 0
@@ -57,10 +71,22 @@ def calc_pcts(qtds, query):
 
 
 def query_finder(query, sent):
+    """
+    Recebe uma string query e um texto.
+    Retorna True se todos os termos de query foram encontrados em sent.
+    """
     return len([x for x in set(query.split()) if f" {x} " in sent]) == len(query.split())
 
 
 def corpus_search(d, query, juizos, tipos):
+    """
+    Recebe um dicionário d, uma string query,
+    uma lista com varas e uma com tipos.
+    Retorna uma tupla com dois dicionários:
+    matches contém as sentenças que contém query
+    e são de um dos juízos e de um dos tipos,
+    qtds contém a quantidade de cada tipo pesquisado.
+    """
     qtds = {"pesquisadas": 0, "absolutorias": 0, "condenatorias": 0}
     matches = {"absolutorias": {}, "condenatorias": {}}
     for juizo in juizos:
@@ -75,6 +101,13 @@ def corpus_search(d, query, juizos, tipos):
 
 
 def sent_finder(sentencas, query):
+    """
+    Recebe um dicionário do tipo d = {num_processo: sentença}
+    e uma string query.
+    Retorna uma tupla contendo um numero de processo e uma sentença,
+    classificada de acordo com o tf_idf das sentenças.
+    ** Essa função ignora por enquanto o idf, que será implementado posteriormente **
+    """
     idfs, tfidfs = compute_tf_idfs(sentencas)
     scores = {}
     for num, sent in sentencas.items():
@@ -87,6 +120,10 @@ def sent_finder(sentencas, query):
 
 
 def compute_tf_idfs(docs):
+    """
+    Recebe um dicionário do tipo d = {num_processo: sentença}.
+    Calcula o idf e o tf_idf e os retorna em uma tupla de dois pd.DataFrames
+    """
     nums = list(docs)
     sents = list(docs.values())
     cv = CountVectorizer()

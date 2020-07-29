@@ -1,3 +1,9 @@
+"""
+Definição das Classes Sentencas e Sentenca.
+Criação da variável STOPLIST.
+"""
+
+
 import os
 import string
 
@@ -8,8 +14,15 @@ STOPLIST = nltk.corpus.stopwords.words("portuguese") + list(string.punctuation) 
 
 
 class Sentencas:
-    def __init__(self, path):
-        self.sentencas = self.reader(path)
+    def __init__(self, sentencas=None, path=None):
+        if sentencas is not None:
+            self.sentencas = sentencas
+        if path is not None:
+            self.sentencas = self.reader(path)
+
+    def __add__(self, other):
+        sents = self.sentencas.union(other.sentencas)
+        return Sentencas(sentencas=sents)
 
     def reader(self, path):
         sentencas = set()

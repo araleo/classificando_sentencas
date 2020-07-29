@@ -1,13 +1,11 @@
+""" Módulo para remover acentos dos textos de todos os arquivos. """
+
+
 import os
 
 from unidecode import unidecode
 
-
-def make_folder(folder):
-    try:
-        os.makedirs(folder)
-    except:
-        pass
+from util import make_folder
 
 
 def dir_remover(infolder, outfolder):
@@ -23,11 +21,11 @@ def dir_remover(infolder, outfolder):
 
 
 def main():
-    c_path = "./LSVC/corpora/corpus"
+    c_path = "./corpora/corpus"
     for vara in os.listdir(c_path):
         print(vara)
         for cat in os.listdir(f"{c_path}/{vara}"):
-            dir_remover(f"{c_path}/{vara}/{cat}", f"./LSVC/corpora/decoded2/{vara}/{cat}")
+            dir_remover(f"{c_path}/{vara}/{cat}", f"./corpora/decoded/{vara}/{cat}")
 
 
 if __name__ == "__main__":

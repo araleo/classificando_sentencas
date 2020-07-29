@@ -1,14 +1,9 @@
+""" Módulo para exibir a contagem e porcentagem de cada tipo de sentença classificada. """
+
+
 import os
 
-def load_category(cat):
-    if cat == "0":
-        return "neutras"
-    elif cat == "1":
-        return "absolutorias"
-    elif cat == "2":
-        return "condenatorias"
-    else:
-        return "falhas"
+from util import load_category
 
 
 def imprime(d):
@@ -17,21 +12,23 @@ def imprime(d):
     con = d["condenatorias"] / total * 100
     neu = d["neutras"] / total * 100
     fal = d["falhas"] / total * 100
-    print(f"Absolutorias: {abs:.2f} ")
-    print(f"condenatorias: {con:.2f} ")
-    print(f"neutras: {neu:.2f} ")
-    print(f"falhas: {fal:.2f} ")
+    print(f"absolutorias: {d['absolutorias']} - {abs:.2f}% ")
+    print(f"condenatorias: {d['condenatorias']} - {con:.2f}% ")
+    print(f"neutras: {d['neutras']} - {neu:.2f}% ")
+    print(f"falhas: {d['falhas']} - {fal:.2f}%")
 
 
 def main():
-    root = "./TCTS/corpus"
+    root = "./corpora/corpus"
     d = {}
 
     for vara in os.listdir(root):
         d[vara] = {}
-        for cat in os.listdir(f"{root}/{vara}"):
-            d[vara].setdefault(load_category(cat), 0)
-            d[vara][load_category(cat)] += len(os.listdir(f"{root}/{vara}/{cat}"))
+        for categoria in os.listdir(f"{root}/{vara}"):
+            c = load_category(categoria)
+            cat = c if c is not None else "falhas"
+            d[vara].setdefault(cat, 0)
+            d[vara][cat] += len(os.listdir(f"{root}/{vara}/{categoria}"))
 
     for k in d:
         print(k)
