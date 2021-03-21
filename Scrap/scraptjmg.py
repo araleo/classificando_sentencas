@@ -50,10 +50,10 @@ def get_lista_datas(datas):
 
 
 def main():
-    vara = "t3"
-    for pg in range(111):
+    vara = "aluguel"
+    for pg in range(5):
         print(pg)
-        busca = f"https://www5.tjmg.jus.br/jurisprudencia/sentenca.do?numeroProcesso=&complemento=&acordaoEmenta=&palavrasConsulta=estado&tipoFiltro=and&relator=&codigoCompostoRelator=&dataInicial=&dataFinal=&numeroUnico=&codigoComarca=24&codigoOrgaoJulgador=24-81-3&resultPagina=50&pg={pg}&pesquisar=Pesquisar"
+        busca = f"https://www5.tjmg.jus.br/jurisprudencia/sentenca.do?numeroProcesso=&complemento=&acordaoEmenta=&palavrasConsulta=aluguel+residencial+rescis%E3o+contratual+locat%E1rio+multa&tipoFiltro=and&relator=&codigoCompostoRelator=&dataInicial=&dataFinal=&codigoComarca=24&codigoOrgaoJulgador=&resultPagina=50&pg={pg}&pesquisar=Pesquisar"
         res = get_request(busca)
         if res:
             soup = bs4.BeautifulSoup(res.text, "html.parser")
@@ -87,7 +87,7 @@ def main():
                         with open(f"./{vara}/{cnj}{data}{cod8}.txt", "w") as f:
                             f.write(sentenca)
 
-    with open(f"./errorlog.txt", "a") as f:
+    with open(f"errorlog.txt", "a") as f:
         for err in ERROS:
             f.write(err)
             f.write("\n")

@@ -9,8 +9,8 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
 import pandas as pd
 
-from rol_varas import LISTA_VARAS
-from util import load_category
+from Util.rol_varas import LISTA_VARAS
+from Util.util import load_category
 
 
 def load_files(root):
@@ -67,6 +67,7 @@ def calc_pcts(qtds, query):
     pct["query"] = 100 * qtds[query] / qtds["pesquisadas"]
     pct["abs"] = 100 * qtds.get("absolutorias", 0) / qtds[query] if pct["query"] != 0 else 0
     pct["con"] = 100 * qtds.get("condenatorias", 0) / qtds[query] if pct["query"] != 0 else 0
+    pct["neu"] = 100 * qtds.get("neutras", 0) / qtds[query] if pct["query"] != 0 else 0
     return pct
 
 
@@ -87,8 +88,8 @@ def corpus_search(d, query, juizos, tipos):
     e são de um dos juízos e de um dos tipos,
     qtds contém a quantidade de cada tipo pesquisado.
     """
-    qtds = {"pesquisadas": 0, "absolutorias": 0, "condenatorias": 0}
-    matches = {"absolutorias": {}, "condenatorias": {}}
+    qtds = {"pesquisadas": 0, "absolutorias": 0, "condenatorias": 0, "neutras": 0}
+    matches = {"absolutorias": {}, "condenatorias": {}, "neutras": {}}
     for juizo in juizos:
         for tipo in tipos:
             for numero, sentenca in d[juizo][tipo].items():
@@ -96,7 +97,7 @@ def corpus_search(d, query, juizos, tipos):
                 if query_finder(query, sentenca):
                     matches[tipo][numero] = sentenca
                     qtds[tipo] += 1
-    qtds[query] = qtds.get("absolutorias", 0) + qtds.get("condenatorias", 0)
+    qtds[query] = qtds.get("absolutorias", 0) + qtds.get("condenatorias", 0) + qtds.get("neutras", 0)
     return matches, qtds
 
 
@@ -148,7 +149,7 @@ def main():
         query = input("Busca: ")
         query = unidecode(query).lower()
         juizos = validate_vara(input("Vara: ").split())
-        tipos = ["absolutorias", "condenatorias"]
+        tipos = ["absolutorias", "condenatorias", "neutras"]
 
         if len(juizos) == 0:
             print("Nenhuma das varas pesquisadas foi encontrada em nosso banco.")
@@ -162,13 +163,15 @@ def main():
             f"e o termo {query} foi encontrado em {qtds[query]} delas ",
             f"({pct['query']:.2f}%).\n",
             f"Das {qtds[query]} sentenças encontradas, ",
-            f"{qtds.get('absolutorias', 0)} eram absolutorias ({pct['abs']:.2f}%) e ",
-            f"{qtds.get('condenatorias', 0)} eram condenatorias ({pct['con']:.2f}%)."
+            f"{qtds.get('absolutorias', 0)} absolutorias ({pct['abs']:.2f}%), ",
+            f"{qtds.get('condenatorias', 0)} condenatorias ({pct['con']:.2f}%) e "
+            f"{qtds.get('neutras', 0)} neutras ({pct['neu']:.2f}%)."
         )
         print("".join(output))
 
-        cat = load_category(input("Deseja visualizar uma sentença? 1. Absolutoria 2. Condenatoria "))
-        print(sent_finder(sents[cat], query))
+        cat = load_category(input("Deseja visualizar uma sentença? 0. Neutra 1. Absolutoria 2. Condenatoria 3. Não"))
+        if cat:
+            print(sent_finder(sents[cat], query))
 
 
 if __name__ == "__main__":

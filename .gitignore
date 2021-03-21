@@ -1,13 +1,4 @@
-corpora
-labels
-raw
-__pycache__
-.ipynb_checkpoints
-.idea
-notebooks/
-tributario/
-temp
-t1/
-t3/
-db_loader
-db_loader.py
+Data/
+Load/
+Notebooks/.ipynb_checkpoints/
+Scrap/errorlog.txt

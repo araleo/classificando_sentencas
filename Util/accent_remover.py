@@ -21,7 +21,7 @@ def dir_remover(infolder, outfolder):
 
 
 def main():
-    c_path = "./corpora/corpus"
+    c_path = "../corpora/corpus"
     for vara in os.listdir(c_path):
         print(vara)
         for cat in os.listdir(f"{c_path}/{vara}"):

@@ -1,4 +1,4 @@
-""" Módulo para remover arquivos .pdf e arquivos vazios baixados pelo scrapper. """
+""" Módulo para remover arquivos .pdf e arquivos vazios baixados pelo scrapper """
 
 
 import os
@@ -33,10 +33,13 @@ def remove_bads(bad_files):
 
 
 def main():
-    e_files = find_empty("../tributario/raw")
-    p_files = find_pdfs("../tributario/raw")
-    print(len(e_files), len(p_files))
-    print(remove_bads(e_files + p_files))
+    fp = "./jfrj"
+    for folder in os.listdir(fp):
+        path = fp + "/" + folder
+        e_files = find_empty(path)
+        p_files = find_pdfs(path)
+        print(len(e_files), len(p_files))
+        print(remove_bads(e_files + p_files))
 
 
 if __name__ == "__main__":
