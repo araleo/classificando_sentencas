@@ -1,8 +1,11 @@
+""" Módulo para mover arquivos entre pastas temporárias e finais. """
+
+
 import os
 import shutil
 
 
-def abs_e_neutras(root, out):
+def move_abs_e_neutras(root, out):
     for vara in os.listdir(root):
         for cat in os.listdir(f"{root}/{vara}"):
             src = f"{root}/{vara}/{cat}"
@@ -15,6 +18,7 @@ def abs_e_neutras(root, out):
             elif cat == "3":
                 dst = f"{out}/{vara}/4"
                 shutil.copytree(src, dst)
+    shutil.rmtree(root)
 
 
 def move_condenatorias(root, out):
@@ -27,6 +31,7 @@ def move_condenatorias(root, out):
             elif cat == "3":
                 dst = f"{out}/{vara}/3"
                 shutil.copytree(src, dst)
+    shutil.rmtree(root)
 
 
 def move_nc(root, out):
@@ -41,7 +46,7 @@ def move_nc(root, out):
 
 def main():
     move_condenatorias("./TCTS/classified_c_nc", f"./TCTS/corpus")
-    abs_e_neutras("./TCTS/classified_a_n", f"./TCTS/corpus")
+    move_abs_e_neutras("./TCTS/classified_a_n", f"./TCTS/corpus")
     pass
 
 

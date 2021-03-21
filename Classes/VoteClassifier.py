@@ -1,3 +1,5 @@
+""" Definição da classe VoteClassifier e do método safe_classify. """
+
 from nltk.classify import ClassifierI
 
 

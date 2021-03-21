@@ -1,4 +1,8 @@
 """
+Esse módulo cria a variável LISTA_VARAS
+de acordo com a:
+
+*** LISTA DE VARAS DISPONÍVEIS ***
  1 = 1ª Vara Criminal de Belo Horizonte
  3 = 3ª Vara Criminal de Belo Horizonte
  4 = 4ª Vara Criminal de Belo Horizonte
@@ -27,8 +31,18 @@ u1 = 1ª Vara Criminal de Uberlândia
 u2 = 2ª Vara Criminal de Uberlândia
 u4 = 4ª Vara Criminal de Uberlândia
 """
+
+
 LISTA_VARAS = [
     "1", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12",
     "b1", "b2", "b3", "c2", "c3", "c4", "j4", "m1", "r1", "t1",
     "t2", "t3", "t4", "u1", "u2", "u4"
 ]
+
+
+def main():
+    pass
+
+
+if __name__ == "__main__":
+    main()
